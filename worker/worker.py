@@ -106,7 +106,10 @@ def separate_audio(songhash, model='htdemucs'):
         return False
     
     log_info(f"Running DEMUCS separation on {songhash}")
-    demucs_cmd = f"python3 -m demucs.separate --mp3 --out {output_dir} -n {model} {input_file}"
+    
+    # Just use the simplest command
+    demucs_cmd = f"python3 -m demucs.separate --mp3 --out {output_dir} {input_file}"
+    
     log_debug(f"Executing: {demucs_cmd}")
     exit_code = os.system(demucs_cmd)
     
@@ -116,11 +119,18 @@ def separate_audio(songhash, model='htdemucs'):
     
     log_info(f"DEMUCS separation completed for {songhash}")
     
-    demucs_output_dir = f"{output_dir}/{model}/{songhash}"
-    if not os.path.exists(demucs_output_dir):
-        log_debug(f"Output directory not found: {demucs_output_dir}")
+    # Find the actual output directory (could be htdemucs, mdx_extra, mdx_extra_q, etc.)
+    import glob
+    possible_dirs = glob.glob(f"{output_dir}/*/{songhash}")
+    
+    if not possible_dirs:
+        log_debug(f"No output directory found for {songhash}")
         return False
     
+    demucs_output_dir = possible_dirs[0]
+    log_debug(f"Found output directory: {demucs_output_dir}")
+    
+    # Default outputs 4 tracks
     tracks = ['bass.mp3', 'drums.mp3', 'vocals.mp3', 'other.mp3']
     upload_success = True
     

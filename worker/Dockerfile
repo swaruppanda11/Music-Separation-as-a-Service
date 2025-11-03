@@ -6,5 +6,6 @@ RUN pip3 install --no-cache-dir --upgrade minio redis requests jsonpickle
 
 COPY worker.py .
 
-# Use -u flag for unbuffered output
+# Override entrypoint and use unbuffered Python
+ENTRYPOINT []
 CMD ["python3", "-u", "worker.py"]
