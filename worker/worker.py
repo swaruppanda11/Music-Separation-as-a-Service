@@ -106,8 +106,6 @@ def separate_audio(songhash, model='htdemucs'):
         return False
     
     log_info(f"Running DEMUCS separation on {songhash}")
-    
-    # Just use the simplest command
     demucs_cmd = f"python3 -m demucs.separate --mp3 --out {output_dir} {input_file}"
     
     log_debug(f"Executing: {demucs_cmd}")
@@ -119,7 +117,6 @@ def separate_audio(songhash, model='htdemucs'):
     
     log_info(f"DEMUCS separation completed for {songhash}")
     
-    # Find the actual output directory (could be htdemucs, mdx_extra, mdx_extra_q, etc.)
     import glob
     possible_dirs = glob.glob(f"{output_dir}/*/{songhash}")
     
@@ -130,7 +127,6 @@ def separate_audio(songhash, model='htdemucs'):
     demucs_output_dir = possible_dirs[0]
     log_debug(f"Found output directory: {demucs_output_dir}")
     
-    # Default outputs 4 tracks
     tracks = ['bass.mp3', 'drums.mp3', 'vocals.mp3', 'other.mp3']
     upload_success = True
     
@@ -141,7 +137,10 @@ def separate_audio(songhash, model='htdemucs'):
             upload_success = False
             continue
         
-        object_name = f"{songhash}-{track}"
+        # CHANGED: Upload to folder structure like professor
+        # Instead of: {songhash}-{track}
+        # Use: {songhash}/{track}
+        object_name = f"{songhash}/{track}"
         if not upload_to_minio('output', object_name, track_path):
             upload_success = False
     

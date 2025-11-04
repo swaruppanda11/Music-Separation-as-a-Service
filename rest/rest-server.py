@@ -104,14 +104,22 @@ def get_queue():
 @app.route('/apiv1/track/<songhash>/<track>', methods=['GET'])
 def get_track(songhash, track):
     try:
-        object_name = f"{songhash}-{track}"
+        # CHANGED: Use folder structure
+        object_name = f"{songhash}/{track}"
+        
         log_debug(f"Retrieving track: {object_name}")
         response = minioClient.get_object('output', object_name)
         mp3_data = response.read()
         response.close()
         response.release_conn()
         log_info(f"Successfully retrieved track: {object_name}")
-        return send_file(io.BytesIO(mp3_data), mimetype='audio/mpeg', as_attachment=True, download_name=track)
+        
+        return send_file(
+            io.BytesIO(mp3_data),
+            mimetype='audio/mpeg',
+            as_attachment=True,
+            download_name=track
+        )
     except S3Error as e:
         log_debug(f"Track not found in MinIO: {object_name}")
         return jsonify({'error': 'Track not found'}), 404
@@ -122,14 +130,15 @@ def get_track(songhash, track):
 @app.route('/apiv1/remove/<songhash>/<track>', methods=['GET'])
 def remove_track(songhash, track):
     try:
-        object_name = f"{songhash}-{track}"
+        # CHANGED: Use folder structure
+        object_name = f"{songhash}/{track}"
         minioClient.remove_object('output', object_name)
         log_info(f"Removed track: {object_name}")
         return jsonify({'status': 'success', 'message': f'Removed {object_name}'}), 200
     except Exception as e:
         log_debug(f"Error in remove: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
+    
 if __name__ == '__main__':
     log_info("REST server starting...")
     ensure_buckets()

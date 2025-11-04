@@ -1,0 +1,17 @@
+# If you stopped the container, restart it:
+docker start music-sep-control-plane
+
+# Switch to the right context
+kubectl config use-context kind-music-sep
+
+# Deploy everything
+./deploy-local-dev.sh
+
+# Start port forwarding
+kubectl port-forward --address 0.0.0.0 service/rest-service 5000:5000 &
+kubectl port-forward --address 0.0.0.0 service/redis 6379:6379 &
+kubectl port-forward -n minio-ns --address 0.0.0.0 service/minio-proj 9000:9000 &
+kubectl port-forward -n minio-ns --address 0.0.0.0 service/minio-proj 9001:9001 &
+
+# Test
+python3 short-sample-request.py
